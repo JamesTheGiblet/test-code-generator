@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Code Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        header {
+            background: #4e54c8;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .upload-section, .options-section, .result-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        h2 {
+            color: #4e54c8;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #4e54c8;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #eef2ff;
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: #4e54c8;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area p {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .btn {
+            background: #4e54c8;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        
+        .btn:hover {
+            background: #3a3eb3;
+            transform: translateY(-2px);
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .option-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            transition: all 0.3s;
+        }
+        
+        .option-card:hover {
+            border-color: #4e54c8;
+            transform: translateY(-5px);
+        }
+        
+        .option-card.selected {
+            border-color: #4e54c8;
+            background: #eef2ff;
+        }
+        
+        .option-card i {
+            font-size: 2rem;
+            color: #4e54c8;
+            margin-bottom: 10px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        
+        .result-area {
+            background: #2d3748;
+            color: #cbd5e0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            height: 250px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #48bb78;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        footer {
+            color: white;
+            text-align: center;
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Test Code Generator</h1>
+            <p class="subtitle">Upload your code and generate comprehensive test cases</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2>Upload Your Code</h2>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to upload or drag and drop</p>
+                    <p class="file-name" id="fileName">No file selected</p>
+                    <button class="btn">Select File</button>
+                    <input type="file" id="fileInput" class="hidden" accept=".js,.java,.py,.php,.ts">
+                </div>
+            </div>
+            
+            <div class="options-section">
+                <h2>Select Language & Framework</h2>
+                <div class="options-grid">
+                    <div class="option-card selected">
+                        <i class="fab fa-js"></i>
+                        <p>JavaScript</p>
+                        <p>Jest/Mocha</p>
+                    </div>
+                    <div class="option-card">
+                        <i class="fab fa-python"></i>
+                        <p>Python</p>
+                        <p>Pytest/Unittest</p>
+                    </div>
+                    <div class="option-card">
+                        <i class="fab fa-java"></i>
+                        <p>Java</p>
+                        <p>JUnit</p>
+                    </div>
+                    <div class="option-card">
+                        <i class="fab fa-php"></i>
+                        <p>PHP</p>
+                        <p>PHPUnit</p>
+                    </div>
+                </div>
+                
+                <h2 style="margin-top: 25px;">Test Configuration</h2>
+                <div class="options-grid">
+                    <div class="option-card">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Unit Tests</p>
+                    </div>
+                    <div class="option-card">
+                        <i class="fas fa-exchange-alt"></i>
+                        <p>Integration Tests</p>
+                    </div>
+                    <div class="option-card">
+                        <i class="fas fa-bolt"></i>
+                        <p>Performance Tests</p>
+                    </div>
+                    <div class="option-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>Security Tests</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h2>Generated Test Code</h2>
+                <div class="result-area" id="testOutput">
+// Test code will appear here after generation
+// Select your language and upload your code to get started
+                </div>
+                <button class="btn" id="generateBtn">Generate Tests</button>
+                <button class="btn" id="copyBtn" style="background: #48bb78;">
+                    <i class="fas fa-copy"></i> Copy to Clipboard
+                </button>
+                <button class="btn" id="downloadBtn" style="background: #2d3748;">
+                    <i class="fas fa-download"></i> Download Tests
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">Test code copied to clipboard!</div>
+    
+    <footer>
+        <p>Test Code Generator &copy; 2023 | Generate comprehensive test cases for your code</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileName = document.getElementById('fileName');
+            const generateBtn = document.getElementById('generateBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const testOutput = document.getElementById('testOutput');
+            const notification = document.getElementById('notification');
+            const optionCards = document.querySelectorAll('.option-card');
+            
+            // Upload area click handler
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Drag and drop functionality
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.background = '#eef2ff';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.background = '#f8f9fa';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.background = '#f8f9fa';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelection();
+                }
+            });
+            
+            // File input change handler
+            fileInput.addEventListener('change', handleFileSelection);
+            
+            function handleFileSelection() {
+                if (fileInput.files.length) {
+                    const file = fileInput.files[0];
+                    fileName.textContent = file.name;
+                    
+                    // Read file content
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // For demo purposes, we'll just show the file content
+                        console.log('File content:', e.target.result);
+                    };
+                    reader.readAsText(file);
+                }
+            }
+            
+            // Option card selection
+            optionCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Remove selected class from all cards in the same grid
+                    const parentGrid = card.closest('.options-grid');
+                    parentGrid.querySelectorAll('.option-card').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked card
+                    card.classList.add('selected');
+                });
+            });
+            
+            // Generate test code
+            generateBtn.addEventListener('click', () => {
+                // In a real application, this would send the code to a backend for processing
+                // For this demo, we'll generate sample test code based on the selected language
+                
+                const selectedLang = document.querySelector('.options-grid .option-card.selected p').textContent;
+                
+                let sampleTestCode = '';
+                
+                switch(selectedLang) {
+                    case 'JavaScript':
+                        sampleTestCode = `// Generated Jest tests for JavaScript
+describe('Math operations', () => {
+  test('adds 1 + 2 to equal 3', () => {
+    expect(1 + 2).toBe(3);
+  });
+  
+  test('multiplies 4 * 5 to equal 20', () => {
+    expect(4 * 5).toBe(20);
+  });
+});
+
+describe('String operations', () => {
+  test('concatenates two strings', () => {
+    expect('Hello, ' + 'World!').toBe('Hello, World!');
+  });
+});`;
+                        break;
+                    case 'Python':
+                        sampleTestCode = `# Generated Pytest tests for Python
+def test_addition():
+    assert 1 + 2 == 3
+
+def test_multiplication():
+    assert 4 * 5 == 20
+
+def test_concatenation():
+    assert 'Hello, ' + 'World!' == 'Hello, World!'
+
+class TestMathOperations:
+    def test_subtraction(self):
+        assert 5 - 3 == 2`;
+                        break;
+                    case 'Java':
+                        sampleTestCode = `// Generated JUnit tests for Java
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class GeneratedTests {
+    
+    @Test
+    public void testAddition() {
+        assertEquals(3, 1 + 2);
+    }
+    
+    @Test
+    public void testMultiplication() {
+        assertEquals(20, 4 * 5);
+    }
+    
+    @Test
+    public void testConcatenation() {
+        assertEquals("Hello, World!", "Hello, " + "World!");
+    }
+}`;
+                        break;
+                    case 'PHP':
+                        sampleTestCode = `<?php
+// Generated PHPUnit tests for PHP
+use PHPUnit\\Framework\\TestCase;
+
+class GeneratedTests extends TestCase
+{
+    public function testAddition()
+    {
+        $this->assertEquals(3, 1 + 2);
+    }
+    
+    public function testMultiplication()
+    {
+        $this->assertEquals(20, 4 * 5);
+    }
+    
+    public function testConcatenation()
+    {
+        $this->assertEquals('Hello, World!', 'Hello, ' . 'World!');
+    }
+}`;
+                        break;
+                }
+                
+                testOutput.textContent = sampleTestCode;
+            });
+            
+            // Copy to clipboard
+            copyBtn.addEventListener('click', () => {
+                const textArea = document.createElement('textarea');
+                textArea.value = testOutput.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                // Show notification
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            });
+            
+            // Download test code
+            downloadBtn.addEventListener('click', () => {
+                const blob = new Blob([testOutput.textContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                const selectedLang = document.querySelector('.options-grid .option-card.selected p').textContent;
+                a.download = `generated_tests.${getFileExtension(selectedLang)}`;
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+            
+            function getFileExtension(language) {
+                switch(language) {
+                    case 'JavaScript': return 'test.js';
+                    case 'Python': return 'test.py';
+                    case 'Java': return 'Test.java';
+                    case 'PHP': return 'Test.php';
+                    default: return 'txt';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
